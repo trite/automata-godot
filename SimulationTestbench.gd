@@ -2,6 +2,22 @@ extends Control
 
 var weights := [ 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
 
+enum SimulationState {
+	PAUSE_REQUESTED,
+	PAUSED,
+	RUN_REQUESTED,
+	RUNNING,
+	# STEP_REQUESTED,
+	# STEPPING
+}
+
+var simulationState := SimulationState.PAUSED
+
+func makeDebugInfo():
+	$VBoxContainer/BodyRow/DebugInfo.text = \
+		"Current state: " + str(simulationState)
+
+
 func updateWeights(newWeights):
 	weights = newWeights
 
@@ -29,18 +45,36 @@ func updateWeights(newWeights):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
-
+	makeDebugInfo()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	pass
+	match simulationState:
+		SimulationState.PAUSE_REQUESTED:
+			# TODO: Pause simulation here
+			simulationState = SimulationState.PAUSED
+
+		SimulationState.RUN_REQUESTED:
+			# TODO: Start simulation here
+			simulationState = SimulationState.RUNNING
+
+		SimulationState.PAUSED:
+			pass
+
+		SimulationState.RUNNING:
+			# TODO: Any processing logic during simulation
+			pass
+
+		_:
+			pass
+
+	makeDebugInfo()
 
 func _on_simulation_settings_window_close_requested():
-	$VBoxContainer/HBoxContainer/ShowSimSettings.visible = true
+	$VBoxContainer/HeaderRow/ShowSimSettings.visible = true
 
 func _on_show_sim_settings_pressed():
-	$VBoxContainer/HBoxContainer/ShowSimSettings.visible = false
+	$VBoxContainer/HeaderRow/ShowSimSettings.visible = false
 	$SimulationSettingsWindow.visible = true
 
 
@@ -57,3 +91,22 @@ func _on_apply_weights_pressed():
 		float(wv.get_node("Bottom").text),
 		float(wv.get_node("BottomRight").text)
 	])
+
+func toggleSimulationState():
+	match simulationState:
+		SimulationState.PAUSED:
+			simulationState = SimulationState.RUN_REQUESTED
+		SimulationState.RUNNING:
+			simulationState = SimulationState.PAUSE_REQUESTED
+		_:
+			pass
+
+# func _unhandled_input(event):
+# 	if event.is_action_pressed("ui_accept"):
+# 		toggleSimulationState()
+# 	# match event:
+# 	# 	InputEventKey:
+
+func _input(event):
+	if event.is_action_pressed("ui_accept"):
+		toggleSimulationState()

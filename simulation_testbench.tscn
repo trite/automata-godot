@@ -22,50 +22,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="HeaderRow" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="ShowSimSettings" type="Button" parent="VBoxContainer/HBoxContainer"]
-visible = false
+[node name="ShowSimSettings" type="Button" parent="VBoxContainer/HeaderRow"]
 layout_mode = 2
 text = "Simulation Settings"
 
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Test 1"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label2" type="Label" parent="VBoxContainer/HBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Test 2"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+[node name="BodyRow" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer2"]
+[node name="DebugInfo" type="Label" parent="VBoxContainer/BodyRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Test 3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Label2" type="Label" parent="VBoxContainer/HBoxContainer2"]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Test 4"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="SimulationSettingsWindow" type="Window" parent="."]
+handle_input_locally = false
 title = "Simulation Settings"
 initial_position = 1
 size = Vector2i(640, 480)
+visible = false
 script = ExtResource("1_32rpe")
 
 [node name="Tabs" type="TabContainer" parent="SimulationSettingsWindow"]
@@ -79,7 +59,7 @@ grow_vertical = 2
 visible = false
 layout_mode = 2
 
-[node name="Label" type="Label" parent="SimulationSettingsWindow/Tabs/Info"]
+[node name="InfoLabel" type="Label" parent="SimulationSettingsWindow/Tabs/Info"]
 layout_mode = 2
 text = "Play/pause: <ENTER>"
 
@@ -219,7 +199,7 @@ alignment = 1
 layout_mode = 2
 text = "Apply New Weights"
 
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/ShowSimSettings" to="." method="_on_show_sim_settings_pressed"]
+[connection signal="pressed" from="VBoxContainer/HeaderRow/ShowSimSettings" to="." method="_on_show_sim_settings_pressed"]
 [connection signal="close_requested" from="SimulationSettingsWindow" to="." method="_on_simulation_settings_window_close_requested"]
 [connection signal="close_requested" from="SimulationSettingsWindow" to="SimulationSettingsWindow" method="_on_close_requested"]
 [connection signal="pressed" from="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/ApplyWeights" to="." method="_on_apply_weights_pressed"]
