@@ -27,9 +27,6 @@ func updateWeights(newWeights):
 	nw.get_node("Bottom").text = str(weights[7])
 	nw.get_node("BottomRight").text = str(weights[8])
 
-	print("New weights:")
-	print(weights)
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
