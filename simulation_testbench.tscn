@@ -1,0 +1,209 @@
+[gd_scene load_steps=4 format=3 uid="uid://ctbfsqj6c8roa"]
+
+[ext_resource type="Script" path="res://SimulationSettingsWindow.gd" id="1_32rpe"]
+[ext_resource type="Script" path="res://SimulationTestbench.gd" id="1_57fn5"]
+[ext_resource type="PackedScene" path="res://CellRenderer.tscn" id="2_74l1s"]
+
+[node name="SimulationTestbench" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_57fn5")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HeaderRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ShowSimSettings" type="Button" parent="VBoxContainer/HeaderRow"]
+layout_mode = 2
+text = "Simulation Settings"
+
+[node name="BodyRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="DebugInfo" type="Label" parent="VBoxContainer/BodyRow"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Test 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CellRenderer" parent="VBoxContainer/BodyRow" instance=ExtResource("2_74l1s")]
+layout_mode = 2
+
+[node name="SimulationSettingsWindow" type="Window" parent="."]
+handle_input_locally = false
+title = "Simulation Settings"
+initial_position = 1
+size = Vector2i(640, 480)
+visible = false
+script = ExtResource("1_32rpe")
+
+[node name="Tabs" type="TabContainer" parent="SimulationSettingsWindow"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Info" type="VBoxContainer" parent="SimulationSettingsWindow/Tabs"]
+layout_mode = 2
+
+[node name="InfoLabel" type="Label" parent="SimulationSettingsWindow/Tabs/Info"]
+layout_mode = 2
+text = "Play/pause: <ENTER>"
+
+[node name="Kernel" type="VBoxContainer" parent="SimulationSettingsWindow/Tabs"]
+visible = false
+layout_mode = 2
+
+[node name="CellWeights" type="HBoxContainer" parent="SimulationSettingsWindow/Tabs/Kernel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CurrentWeights" type="VBoxContainer" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights"]
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="CurrentWeightsText" type="Label" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights"]
+layout_mode = 2
+text = "Current Cell Weights:"
+horizontal_alignment = 1
+
+[node name="WeightValues" type="GridContainer" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights"]
+layout_mode = 2
+columns = 3
+
+[node name="TopLeft" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="Top" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="TopRight" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="Left" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="Center" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "0.0"
+alignment = 1
+editable = false
+
+[node name="Right" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="BottomLeft" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="Bottom" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="BottomRight" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/CurrentWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+editable = false
+
+[node name="NewWeights" type="VBoxContainer" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights"]
+layout_mode = 2
+size_flags_horizontal = 6
+
+[node name="NewWeightsText" type="Label" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights"]
+layout_mode = 2
+text = "New Cell Weights:"
+horizontal_alignment = 1
+
+[node name="WeightValues" type="GridContainer" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights"]
+layout_mode = 2
+columns = 3
+
+[node name="TopLeft" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="Top" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="TopRight" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="Left" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="Center" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "0.0"
+alignment = 1
+
+[node name="Right" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="BottomLeft" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="Bottom" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="BottomRight" type="LineEdit" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/WeightValues"]
+layout_mode = 2
+text = "1.0"
+alignment = 1
+
+[node name="ApplyWeights" type="Button" parent="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights"]
+layout_mode = 2
+text = "Apply New Weights"
+
+[connection signal="pressed" from="VBoxContainer/HeaderRow/ShowSimSettings" to="." method="_on_show_sim_settings_pressed"]
+[connection signal="close_requested" from="SimulationSettingsWindow" to="." method="_on_simulation_settings_window_close_requested"]
+[connection signal="close_requested" from="SimulationSettingsWindow" to="SimulationSettingsWindow" method="_on_close_requested"]
+[connection signal="pressed" from="SimulationSettingsWindow/Tabs/Kernel/CellWeights/NewWeights/ApplyWeights" to="." method="_on_apply_weights_pressed"]

@@ -1,0 +1,34 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1nh2fciorgqo"]
+
+[ext_resource type="Texture2D" uid="uid://clluytyyjs0ba" path="res://icon.svg" id="1_invjy"]
+
+[node name="CameraTest" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="Camera2D" type="Camera2D" parent="SubViewportContainer/SubViewport"]
+zoom = Vector2(0.21, 0.21)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="SubViewportContainer/SubViewport"]
+follow_viewport_enabled = true
+
+[node name="Sprite2D" type="Sprite2D" parent="SubViewportContainer/SubViewport/CanvasLayer"]
+position = Vector2(528, 438)
+texture = ExtResource("1_invjy")
+
+[node name="Sprite2D2" type="Sprite2D" parent="SubViewportContainer/SubViewport/CanvasLayer"]
+position = Vector2(702, 194)
+texture = ExtResource("1_invjy")
+
+[node name="Sprite2D3" type="Sprite2D" parent="SubViewportContainer/SubViewport/CanvasLayer"]
+position = Vector2(245, 184)
+texture = ExtResource("1_invjy")

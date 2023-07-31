@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://cr2sfi8f6h3av"]
+
+[ext_resource type="Script" path="res://CellRenderer.gd" id="1_niuir"]
+[ext_resource type="Script" path="res://Camera2D.gd" id="1_p2unb"]
+[ext_resource type="Texture2D" uid="uid://clluytyyjs0ba" path="res://icon.svg" id="2_as37v"]
+
+[node name="CellRenderer" type="SubViewportContainer"]
+offset_right = 512.0
+offset_bottom = 512.0
+size_flags_horizontal = 3
+stretch = true
+script = ExtResource("1_niuir")
+
+[node name="Viewport" type="SubViewport" parent="."]
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="Cell" type="Sprite2D" parent="Viewport"]
+visible = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("2_as37v")
+
+[node name="Camera" type="Camera2D" parent="Viewport"]
+zoom = Vector2(0.2, 0.2)
+script = ExtResource("1_p2unb")
+
+[node name="Canvas" type="CanvasLayer" parent="Viewport"]
+follow_viewport_enabled = true
