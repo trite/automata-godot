@@ -20,7 +20,25 @@ layout(set = 0, binding = 2, std430) restrict buffer SimulationBuffer {
 
 // The code we want to execute in each invocation
 void main() {
-    // gl_GlobalInvocationID.x uniquely identifies this invocation across all work groups
-    // simulation_buffer.data[gl_GlobalInvocationID.x] *= kernel_buffer.data[0];
-    simulation_buffer.data[gl_GlobalInvocationID.x] *= float(row_length_info_buffer.kernel_row_length);
+    float top_left = simulation_buffer.data[gl_GlobalInvocationID.x - row_length_info_buffer.simulation_row_length - 1] * kernel_buffer.data[0];
+    float top = simulation_buffer.data[gl_GlobalInvocationID.x - row_length_info_buffer.simulation_row_length] * kernel_buffer.data[1];
+    float top_right = simulation_buffer.data[gl_GlobalInvocationID.x - row_length_info_buffer.simulation_row_length + 1] * kernel_buffer.data[2];
+
+    float left = simulation_buffer.data[gl_GlobalInvocationID.x-1] * kernel_buffer.data[3];
+    float center = simulation_buffer.data[gl_GlobalInvocationID.x] * kernel_buffer.data[4];
+    float right = simulation_buffer.data[gl_GlobalInvocationID.x+1] * kernel_buffer.data[5];
+
+    float bottom_left = simulation_buffer.data[gl_GlobalInvocationID.x + row_length_info_buffer.simulation_row_length - 1] * kernel_buffer.data[6];
+    float bottom = simulation_buffer.data[gl_GlobalInvocationID.x + row_length_info_buffer.simulation_row_length] * kernel_buffer.data[7];
+    float bottom_right = simulation_buffer.data[gl_GlobalInvocationID.x + row_length_info_buffer.simulation_row_length + 1] * kernel_buffer.data[8];
+
+    float sum = top_left + top + top_right + left + center + right + bottom_left + bottom + bottom_right;
+
+    if (sum == 3.0) {
+        simulation_buffer.data[gl_GlobalInvocationID.x] = 1.0;
+    } else if (sum == 2.0) {
+        simulation_buffer.data[gl_GlobalInvocationID.x] = simulation_buffer.data[gl_GlobalInvocationID.x];
+    } else {
+        simulation_buffer.data[gl_GlobalInvocationID.x] = 0.0;
+    }
 }

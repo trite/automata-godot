@@ -22,9 +22,22 @@ var shader_file := load("res://csa_compute_shader.glsl")
 var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
 var shader := rd.shader_create_from_spirv(shader_spirv)
 
+func simStateToString(simState):
+	match simState:
+		0:
+			return "PAUSE_REQUESTED"
+		1:
+			return "PAUSED"
+		2:
+			return "RUN_REQUESTED"
+		3:
+			return "RUNNING"
+		_:
+			return "UNKNOWN STATE!!!!!!!!"
+
 func makeDebugInfo():
 	$VBoxContainer/BodyRow/DebugInfo.text = \
-		"Current state: " + str(simulationState)
+		"Current state: " + simStateToString(simulationState)
 
 func updateWeights(newWeights):
 	weights = newWeights
@@ -81,7 +94,22 @@ func _ready():
 
 
 	# Prepare our data. We use floats in the shader, so we need 32 bit.
-	var simulation_input := PackedFloat32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+	var simulation_input := PackedFloat32Array([
+    0, 1, 0, 0, 0,
+    0, 0, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0
+  ])
+
+# [1, 1, 1, 0, 0, 
+#  0, 0, 0, 0, 0,
+#  1, 1, 1, 0, 0,
+#  0, 0, 0, 0, 0,
+#  0, 0, 0, 0, 0]
+
+
+
 	var simulation_bytes := simulation_input.to_byte_array()
 
 	# Create a storage buffer that can hold our float values.
