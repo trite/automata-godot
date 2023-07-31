@@ -33,21 +33,21 @@ int getCellValue(int x, int y, int kernel_position) {
 // The code we want to execute in each invocation
 void main() {
     // float top_left = simulation_buffer.data[gl_GlobalInvocationID.x - row_length_info_buffer.simulation_row_length - 1] * kernel_buffer.data[0];
-    float top_left = getCellValue(-1, -1, 0);
-    float top = getCellValue(0, -1, 1);
-    float top_right = getCellValue(1, -1, 2);
-    float left = getCellValue(-1, 1, 3);
-    float center = getCellValue(0, 1, 4);
-    float right = getCellValue(1, 1, 5);
-    float bottom_left = getCellValue(-1, 1, 6);
-    float bottom = getCellValue(0, 1, 7);
-    float bottom_right = getCellValue(1, 1, 8);
+    int top_left = getCellValue(-1, -1, 0);
+    int top = getCellValue(0, -1, 1);
+    int top_right = getCellValue(1, -1, 2);
+    int left = getCellValue(-1, 1, 3);
+    int center = getCellValue(0, 1, 4);
+    int right = getCellValue(1, 1, 5);
+    int bottom_left = getCellValue(-1, 1, 6);
+    int bottom = getCellValue(0, 1, 7);
+    int bottom_right = getCellValue(1, 1, 8);
 
-    float sum = top_left + top + top_right + left + center + right + bottom_left + bottom + bottom_right;
+    int sum = top_left + top + top_right + left + center + right + bottom_left + bottom + bottom_right;
 
-    if (sum == 3.0) {
+    if (sum == 3) {
         simulation_buffer.data[gl_GlobalInvocationID.x] = 1.0;
-    } else if (sum == 2.0) {
+    } else if (sum == 2) {
         simulation_buffer.data[gl_GlobalInvocationID.x] = simulation_buffer.data[gl_GlobalInvocationID.x];
     } else {
         simulation_buffer.data[gl_GlobalInvocationID.x] = 0.0;

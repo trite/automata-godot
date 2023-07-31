@@ -11,8 +11,7 @@ enum SimulationState {
 	PAUSED,
 	RUN_REQUESTED,
 	RUNNING,
-	# STEP_REQUESTED,
-	# STEPPING
+	STEP_REQUESTED
 }
 
 var simulationState := SimulationState.PAUSED
@@ -32,14 +31,16 @@ var shader := rd.shader_create_from_spirv(shader_spirv)
 
 func simStateToString(simState):
 	match simState:
-		0:
+		SimulationState.PAUSE_REQUESTED:
 			return "PAUSE_REQUESTED"
-		1:
+		SimulationState.PAUSED:
 			return "PAUSED"
-		2:
+		SimulationState.RUN_REQUESTED:
 			return "RUN_REQUESTED"
-		3:
+		SimulationState.RUNNING:
 			return "RUNNING"
+		SimulationState.STEP_REQUESTED:
+			return "STEP_REQUESTED"
 		_:
 			return "UNKNOWN STATE!!!!!!!!"
 
@@ -82,80 +83,42 @@ func updateCellRenderer():
 
 	$VBoxContainer/BodyRow/CellRenderer.cells = arr2d
 	
-# var arr_1d = [...] # Your 1D array of 25 elements
-# var arr_2d = [] # Your future 2D array
-
-# for i in range(0, arr_1d.size(), 5):
-#     arr_2d.append(arr_1d.slice(i, i + 4))
-
-
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	updateCellRenderer()
-	makeDebugInfo()
-
+func stepSimulationForward(_frames: int):
+	# Kernel uniform
 	var kernel := PackedFloat32Array([1, 1, 1, 1, 0, 1, 1, 1, 1])
 	var kernel_bytes := kernel.to_byte_array()
-
 	var kernel_buffer := rd.storage_buffer_create(kernel_bytes.size(), kernel_bytes)
-
 	var kernel_uniform := RDUniform.new()
 	kernel_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	kernel_uniform.binding = 0 # this needs to match the "binding" in our shader file
 	kernel_uniform.add_id(kernel_buffer)
 
+	# Row lengths uniform
 	var kernel_row_length_uniform := RDUniform.new()
 	kernel_row_length_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-
 	var row_length_info_bytes := PackedByteArray(
 		PackedInt32Array([kernel_row_length, simulation_row_length]).to_byte_array())
-
 	var row_length_info_buffer := rd.storage_buffer_create(
 		row_length_info_bytes.size(), row_length_info_bytes)
-
 	var row_length_info_uniform := RDUniform.new()
 	row_length_info_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	row_length_info_uniform.binding = 1
 	row_length_info_uniform.add_id(row_length_info_buffer)
 
-
-	# Prepare our data. We use floats in the shader, so we need 32 bit.
-	var simulation_input := PackedFloat32Array([
-    0, 1, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0
-  ])
-
-# [1, 1, 1, 0, 0, 
-#  0, 0, 0, 0, 0,
-#  1, 1, 1, 0, 0,
-#  0, 0, 0, 0, 0,
-#  0, 0, 0, 0, 0]
-
-
-
+	# Cell data uniform
+	var simulation_input := PackedFloat32Array(simulationData)
 	var simulation_bytes := simulation_input.to_byte_array()
-
-	# Create a storage buffer that can hold our float values.
-	# Each float has 4 bytes (32 bit) so 10 x 4 = 40 bytes
 	var simulation_buffer := rd.storage_buffer_create(simulation_bytes.size(), simulation_bytes)
-
-	# Create a uniform to assign the buffer to the rendering device
 	var simulation_uniform := RDUniform.new()
 	simulation_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	simulation_uniform.binding = 2 # this needs to match the "binding" in our shader file
 	simulation_uniform.add_id(simulation_buffer)
 
-
-	# TODO: missing 2 uniforms here (total of 4)
 	var uniform_set := rd.uniform_set_create([
 		kernel_uniform,
 		row_length_info_uniform,
 		simulation_uniform
-	], shader, 0) # the last parameter (the 0) needs to match the "set" in our shader file
+	], shader, 0)
 
 	# Create a compute pipeline
 	var pipeline := rd.compute_pipeline_create(shader)
@@ -171,9 +134,15 @@ func _ready():
 
 	# Read back the data from the buffer
 	var output_bytes := rd.buffer_get_data(simulation_buffer)
-	var output := output_bytes.to_float32_array()
-	print("Input: ", simulation_input)
-	print("Output: ", output)
+	simulationData = output_bytes.to_float32_array()
+
+	updateCellRenderer()
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	updateCellRenderer()
+	makeDebugInfo()
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
@@ -192,6 +161,10 @@ func _process(_delta):
 		SimulationState.RUNNING:
 			# TODO: Any processing logic during simulation
 			pass
+
+		SimulationState.STEP_REQUESTED:
+			stepSimulationForward(1)
+			simulationState = SimulationState.PAUSED
 
 		_:
 			pass
@@ -238,3 +211,7 @@ func toggleSimulationState():
 func _input(event):
 	if event.is_action_pressed("ui_accept"):
 		toggleSimulationState()
+
+	if event.is_action_pressed("step_simulation"):
+		simulationState = SimulationState.STEP_REQUESTED
+
