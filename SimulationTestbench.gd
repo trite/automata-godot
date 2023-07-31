@@ -1,6 +1,6 @@
 extends Control
 
-var weights := [ 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
+var weights := [ 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 ]
 
 var kernel_row_length := 3
 
@@ -85,7 +85,7 @@ func updateCellRenderer():
 	
 func stepSimulationForward(_frames: int):
 	# Kernel uniform
-	var kernel := PackedFloat32Array([1, 1, 1, 1, 0, 1, 1, 1, 1])
+	var kernel := PackedFloat32Array(weights)
 	var kernel_bytes := kernel.to_byte_array()
 	var kernel_buffer := rd.storage_buffer_create(kernel_bytes.size(), kernel_bytes)
 	var kernel_uniform := RDUniform.new()
@@ -94,12 +94,8 @@ func stepSimulationForward(_frames: int):
 	kernel_uniform.add_id(kernel_buffer)
 
 	# Row lengths uniform
-	var kernel_row_length_uniform := RDUniform.new()
-	kernel_row_length_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	var row_length_info_bytes := PackedByteArray(
-		PackedInt32Array([kernel_row_length, simulation_row_length]).to_byte_array())
-	var row_length_info_buffer := rd.storage_buffer_create(
-		row_length_info_bytes.size(), row_length_info_bytes)
+	var row_length_info_bytes := PackedInt32Array([kernel_row_length, simulation_row_length]).to_byte_array()
+	var row_length_info_buffer := rd.storage_buffer_create(row_length_info_bytes.size(), row_length_info_bytes)
 	var row_length_info_uniform := RDUniform.new()
 	row_length_info_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
 	row_length_info_uniform.binding = 1
@@ -129,6 +125,8 @@ func stepSimulationForward(_frames: int):
 	rd.compute_list_end()
 
 	# Submit to GPU and wait for sync
+	# TODO: Docs say that we shouldn't normally sync here,
+	#         so figure that out at some point
 	rd.submit()
 	rd.sync()
 

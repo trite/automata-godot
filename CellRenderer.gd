@@ -32,8 +32,6 @@ func _ready():
 			$Viewport/Canvas.add_child(cell)
 			cell_sprites[x][y] = cell
 
-
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 	for y in range(0, cell_sprites.size()):
