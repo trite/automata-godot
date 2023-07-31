@@ -1,8 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://djmpdlmwjgvqm"]
+[gd_scene load_steps=4 format=3 uid="uid://ctbfsqj6c8roa"]
 
 [ext_resource type="Script" path="res://SimulationSettingsWindow.gd" id="1_32rpe"]
 [ext_resource type="Script" path="res://SimulationTestbench.gd" id="1_57fn5"]
-[ext_resource type="PackedScene" uid="uid://cr2sfi8f6h3av" path="res://CellRenderer.tscn" id="2_74l1s"]
+[ext_resource type="PackedScene" path="res://CellRenderer.tscn" id="2_74l1s"]
 
 [node name="SimulationTestbench" type="Control"]
 layout_mode = 3

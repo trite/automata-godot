@@ -17,6 +17,14 @@ enum SimulationState {
 
 var simulationState := SimulationState.PAUSED
 
+var simulationData := [
+    0, 1, 0, 0, 0,
+    0, 0, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0
+]
+
 var rd := RenderingServer.create_local_rendering_device()
 var shader_file := load("res://csa_compute_shader.glsl")
 var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
@@ -64,8 +72,27 @@ func updateWeights(newWeights):
 	nw.get_node("Bottom").text = str(weights[7])
 	nw.get_node("BottomRight").text = str(weights[8])
 
+func updateCellRenderer():
+	var arr2d = []
+
+	for i in range(0, simulationData.size(), 5):
+		arr2d.append(simulationData.slice(i, i+5))
+
+	print(arr2d)
+
+	$VBoxContainer/BodyRow/CellRenderer.cells = arr2d
+	
+# var arr_1d = [...] # Your 1D array of 25 elements
+# var arr_2d = [] # Your future 2D array
+
+# for i in range(0, arr_1d.size(), 5):
+#     arr_2d.append(arr_1d.slice(i, i + 4))
+
+
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	updateCellRenderer()
 	makeDebugInfo()
 
 	var kernel := PackedFloat32Array([1, 1, 1, 1, 0, 1, 1, 1, 1])

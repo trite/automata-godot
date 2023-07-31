@@ -24,11 +24,11 @@ func _ready():
 	print(sprite_width)
 	print(sprite_height)
 
-	for x in range(0, cell_sprites.size()):
-		for y in range(0, cell_sprites[x].size()):
+	for y in range(0, cell_sprites.size()):
+		for x in range(0, cell_sprites[y].size()):
 			var cell = $Viewport/Cell.duplicate()
 			cell.visible = cells[x][y] == 1
-			cell.position = Vector2(x * sprite_width, y * sprite_height)
+			cell.position = Vector2(y * sprite_width, x * sprite_height)
 			$Viewport/Canvas.add_child(cell)
 			cell_sprites[x][y] = cell
 
