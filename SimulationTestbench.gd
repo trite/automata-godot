@@ -21,7 +21,7 @@ var simulationState := SimulationState.PAUSED
 # i: 0, limit: <400, move_by: 20
 # slice from 0 to 20
 
-var simulationData := [
+const initialSimulationData := [
 		0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -44,10 +44,13 @@ var simulationData := [
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ]
 
+var simulationData := initialSimulationData
+
 var rd := RenderingServer.create_local_rendering_device()
 var shader_file := load("res://csa_compute_shader.glsl")
 var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
 var shader := rd.shader_create_from_spirv(shader_spirv)
+
 
 func simStateToString(simState):
 	match simState:
@@ -99,11 +102,13 @@ func updateCellRenderer():
 	for i in range(0, simulationData.size(), simulation_grid_width):
 		var row = simulationData.slice(i, i + simulation_grid_width)
 
-		print(row)
+		# For debugging only, will print a ton of data very rapidly
+		# print(row)
 
 		arr2d.append(row)
 
-	print()
+	# For debugging only, will print a ton of data very rapidly
+	# print()
 
 	$VBoxContainer/BodyRow/CellRenderer.cells = arr2d
 	
@@ -145,7 +150,7 @@ func stepSimulationForward(_frames: int):
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
-	rd.compute_list_dispatch(compute_list, 1, 1, 1)
+	rd.compute_list_dispatch(compute_list, 16, 1, 1)
 	rd.compute_list_end()
 
 	# Submit to GPU and wait for sync
@@ -181,8 +186,7 @@ func _process(_delta):
 			pass
 
 		SimulationState.RUNNING:
-			# TODO: Any processing logic during simulation
-			pass
+			stepSimulationForward(1)
 
 		SimulationState.STEP_REQUESTED:
 			stepSimulationForward(1)
@@ -224,16 +228,23 @@ func toggleSimulationState():
 		_:
 			pass
 
-# func _unhandled_input(event):
-# 	if event.is_action_pressed("ui_accept"):
-# 		toggleSimulationState()
-# 	# match event:
-# 	# 	InputEventKey:
-
 func _input(event):
 	if event.is_action_pressed("ui_accept"):
 		toggleSimulationState()
 
 	if event.is_action_pressed("step_simulation"):
 		simulationState = SimulationState.STEP_REQUESTED
+
+	if event.is_action_pressed("reset_simulation"):
+		simulationData = initialSimulationData
+		match simulationState:
+			SimulationState.PAUSED, \
+			SimulationState.PAUSE_REQUESTED, \
+			SimulationState.STEP_REQUESTED:
+				updateCellRenderer()
+
+			_:
+				pass
+
+			
 
