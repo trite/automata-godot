@@ -4,7 +4,7 @@ var weights := [ 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
 
 var kernel_row_length := 3
 
-var simulation_row_length := 10
+var simulation_row_length := 5
 
 enum SimulationState {
 	PAUSE_REQUESTED,
@@ -17,10 +17,10 @@ enum SimulationState {
 var simulationState := SimulationState.PAUSED
 
 var simulationData := [
-    0, 1, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    1, 1, 1, 0, 0,
     0, 0, 0, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 0, 1, 0,
+    0, 1, 1, 1, 0,
     0, 0, 0, 0, 0
 ]
 
@@ -111,7 +111,7 @@ func stepSimulationForward(_frames: int):
 	var simulation_buffer := rd.storage_buffer_create(simulation_bytes.size(), simulation_bytes)
 	var simulation_uniform := RDUniform.new()
 	simulation_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	simulation_uniform.binding = 2 # this needs to match the "binding" in our shader file
+	simulation_uniform.binding = 2
 	simulation_uniform.add_id(simulation_buffer)
 
 	var uniform_set := rd.uniform_set_create([
@@ -125,7 +125,7 @@ func stepSimulationForward(_frames: int):
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
-	rd.compute_list_dispatch(compute_list, 5, 1, 1)
+	rd.compute_list_dispatch(compute_list, 1, 1, 1)
 	rd.compute_list_end()
 
 	# Submit to GPU and wait for sync

@@ -36,6 +36,6 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	for x in range(0, cell_sprites.size()):
-		for y in range(0, cell_sprites[x].size()):
+	for y in range(0, cell_sprites.size()):
+		for x in range(0, cell_sprites[y].size()):
 			cell_sprites[x][y].visible = cells[x][y] == 1

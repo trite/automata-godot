@@ -1,7 +1,13 @@
 #[compute]
 #version 450
 
-layout(local_size_x = 2, local_size_y = 1, local_size_z = 1) in;
+// Local sizes here and dispatch groups in the SimulationTestbench.gd code
+//   When the totals were 10 (local sizes 2,1,1 and dispatch groups 5,1,1)
+//     the simulation only seemed to alter about the first 10 cells
+//   When the totals were at least 25 (ls 5,1,1 dg 5,1,1 -or- ls 25,1,1 dg 1,1,1)
+//     the simulation seems to run for the entire array
+//   Trying to 
+layout(local_size_x = 25, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, std430) restrict buffer KernelBuffer {
     float data[];
@@ -32,13 +38,12 @@ int getCellValue(int x, int y, int kernel_position) {
 
 // The code we want to execute in each invocation
 void main() {
-    // float top_left = simulation_buffer.data[gl_GlobalInvocationID.x - row_length_info_buffer.simulation_row_length - 1] * kernel_buffer.data[0];
     int top_left = getCellValue(-1, -1, 0);
     int top = getCellValue(0, -1, 1);
     int top_right = getCellValue(1, -1, 2);
-    int left = getCellValue(-1, 1, 3);
-    int center = getCellValue(0, 1, 4);
-    int right = getCellValue(1, 1, 5);
+    int left = getCellValue(-1, 0, 3);
+    int center = getCellValue(0, 0, 4);
+    int right = getCellValue(1, 0, 5);
     int bottom_left = getCellValue(-1, 1, 6);
     int bottom = getCellValue(0, 1, 7);
     int bottom_right = getCellValue(1, 1, 8);
