@@ -1,20 +1,12 @@
 extends SubViewportContainer
 
-@export var cells := [
-  [0, 1, 0, 1, 0],
-  [1, 0, 1, 0, 1],
-  [0, 1, 0, 1, 0],
-  [1, 0, 1, 0, 1],
-  [0, 1, 0, 1, 0],
-];
+@export var grid_width := 20
 
-var cell_sprites := [
-  [null, null, null, null, null],
-  [null, null, null, null, null],
-  [null, null, null, null, null],
-  [null, null, null, null, null],
-  [null, null, null, null, null],
-]
+@export var grid_height := 20
+
+@export var cells := []
+
+var cell_sprites := []
 
 @onready var sprite_width: int = $Viewport/Cell.texture.get_width() * $Viewport/Cell.scale.x
 @onready var sprite_height: int = $Viewport/Cell.texture.get_height() * $Viewport/Cell.scale.y
@@ -24,16 +16,20 @@ func _ready():
 	print(sprite_width)
 	print(sprite_height)
 
-	for y in range(0, cell_sprites.size()):
-		for x in range(0, cell_sprites[y].size()):
-			var cell = $Viewport/Cell.duplicate()
-			cell.visible = cells[x][y] == 1
-			cell.position = Vector2(y * sprite_width, x * sprite_height)
-			$Viewport/Canvas.add_child(cell)
-			cell_sprites[x][y] = cell
+	for y in range(0, grid_height):
+		cell_sprites.append([])
+
+		for x in range(0, grid_width):
+			var cell_sprite = $Viewport/Cell.duplicate()
+
+			cell_sprite.position = Vector2(x * sprite_width, y * sprite_height)
+			cell_sprite.get_node("Label").text = str(x) + "," + str(y)
+			$Viewport/Canvas.add_child(cell_sprite)
+
+			cell_sprites[y].append(cell_sprite)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	for y in range(0, cell_sprites.size()):
-		for x in range(0, cell_sprites[y].size()):
+	for y in range(0, grid_height):
+		for x in range(0, grid_width):
 			cell_sprites[x][y].visible = cells[x][y] == 1

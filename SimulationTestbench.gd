@@ -4,7 +4,9 @@ var weights := [ 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 ]
 
 var kernel_row_length := 3
 
-var simulation_row_length := 5
+# TODO: This should probably live somewhere else
+var simulation_grid_width := 20
+var simulation_grid_height := 20
 
 enum SimulationState {
 	PAUSE_REQUESTED,
@@ -16,12 +18,30 @@ enum SimulationState {
 
 var simulationState := SimulationState.PAUSED
 
+# i: 0, limit: <400, move_by: 20
+# slice from 0 to 20
+
 var simulationData := [
-    0, 0, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    0, 0, 0, 1, 0,
-    0, 1, 1, 1, 0,
-    0, 0, 0, 0, 0
+		1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ]
 
 var rd := RenderingServer.create_local_rendering_device()
@@ -76,10 +96,14 @@ func updateWeights(newWeights):
 func updateCellRenderer():
 	var arr2d = []
 
-	for i in range(0, simulationData.size(), 5):
-		arr2d.append(simulationData.slice(i, i+5))
+	for i in range(0, simulationData.size(), simulation_grid_width):
+		var row = simulationData.slice(i, i + simulation_grid_width)
 
-	print(arr2d)
+		print(row)
+
+		arr2d.append(row)
+
+	print()
 
 	$VBoxContainer/BodyRow/CellRenderer.cells = arr2d
 	
@@ -94,7 +118,7 @@ func stepSimulationForward(_frames: int):
 	kernel_uniform.add_id(kernel_buffer)
 
 	# Row lengths uniform
-	var row_length_info_bytes := PackedInt32Array([kernel_row_length, simulation_row_length]).to_byte_array()
+	var row_length_info_bytes := PackedInt32Array([kernel_row_length, simulation_grid_width]).to_byte_array()
 	var row_length_info_buffer := rd.storage_buffer_create(row_length_info_bytes.size(), row_length_info_bytes)
 	var row_length_info_uniform := RDUniform.new()
 	row_length_info_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
@@ -121,7 +145,7 @@ func stepSimulationForward(_frames: int):
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
-	rd.compute_list_dispatch(compute_list, 1, 1, 1)
+	rd.compute_list_dispatch(compute_list, 8, 1, 1)
 	rd.compute_list_end()
 
 	# Submit to GPU and wait for sync

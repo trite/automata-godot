@@ -6,7 +6,6 @@
 //     the simulation only seemed to alter about the first 10 cells
 //   When the totals were at least 25 (ls 5,1,1 dg 5,1,1 -or- ls 25,1,1 dg 1,1,1)
 //     the simulation seems to run for the entire array
-//   Trying to 
 layout(local_size_x = 25, local_size_y = 1, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, std430) restrict buffer KernelBuffer {

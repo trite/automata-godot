@@ -20,6 +20,14 @@ visible = false
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_as37v")
 
+[node name="Label" type="Label" parent="Viewport/Cell"]
+offset_left = 20.0
+offset_top = 33.225
+offset_right = 117.0
+offset_bottom = 67.225
+theme_override_font_sizes/font_size = 22
+text = "???"
+
 [node name="Camera" type="Camera2D" parent="Viewport"]
 zoom = Vector2(0.2, 0.2)
 script = ExtResource("1_p2unb")
