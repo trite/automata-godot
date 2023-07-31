@@ -29,7 +29,6 @@ theme_override_font_sizes/font_size = 22
 text = "???"
 
 [node name="Camera" type="Camera2D" parent="Viewport"]
-zoom = Vector2(0.2, 0.2)
 script = ExtResource("1_p2unb")
 
 [node name="Canvas" type="CanvasLayer" parent="Viewport"]
