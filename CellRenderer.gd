@@ -1,8 +1,8 @@
 extends SubViewportContainer
 
-@export var grid_width := 20
+@export var grid_width := 6
 
-@export var grid_height := 20
+@export var grid_height := 10
 
 @export var cells := []
 
