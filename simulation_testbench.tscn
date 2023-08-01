@@ -36,13 +36,14 @@ size_flags_vertical = 3
 
 [node name="DebugInfo" type="Label" parent="VBoxContainer/BodyRow"]
 layout_mode = 2
-size_flags_horizontal = 0
-text = "Test 3"
+size_flags_horizontal = 3
+text = "Debug Info Pane"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CellRenderer" parent="VBoxContainer/BodyRow" instance=ExtResource("2_74l1s")]
 layout_mode = 2
+size_flags_stretch_ratio = 4.0
 
 [node name="SimulationSettingsWindow" type="Window" parent="."]
 handle_input_locally = false

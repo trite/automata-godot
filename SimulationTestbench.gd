@@ -18,9 +18,6 @@ enum SimulationState {
 
 var simulationState := SimulationState.PAUSED
 
-# i: 0, limit: <400, move_by: 20
-# slice from 0 to 20
-
 const initialSimulationData := [
 		0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -46,11 +43,13 @@ const initialSimulationData := [
 
 var simulationData := initialSimulationData
 
-var rd := RenderingServer.create_local_rendering_device()
-var shader_file := load("res://csa_compute_shader.glsl")
-var shader_spirv: RDShaderSPIRV = shader_file.get_spirv()
-var shader := rd.shader_create_from_spirv(shader_spirv)
+var shaderPath = "res://csa_compute_shader.glsl"
 
+var rd := RenderingServer.create_local_rendering_device()
+var shader := rd.shader_create_from_spirv(load(shaderPath).get_spirv())
+# var shaderFile := load("res://csa_compute_shader.glsl")
+# var shaderSpirv: RDShaderSPIRV = shaderFile.get_spirv()
+# var shader := rd.shader_create_from_spirv(shaderSpirv)
 
 func simStateToString(simState):
 	match simState:
@@ -67,7 +66,7 @@ func simStateToString(simState):
 		_:
 			return "UNKNOWN STATE!!!!!!!!"
 
-func makeDebugInfo():
+func updateDebugInfo():
 	$VBoxContainer/BodyRow/DebugInfo.text = \
 		"Current state: " + simStateToString(simulationState)
 
@@ -103,12 +102,11 @@ func updateCellRenderer():
 		var row = simulationData.slice(i, i + simulation_grid_width)
 
 		# For debugging only, will print a ton of data very rapidly
+		# if i == 0:
+		# 	print()
 		# print(row)
 
 		arr2d.append(row)
-
-	# For debugging only, will print a ton of data very rapidly
-	# print()
 
 	$VBoxContainer/BodyRow/CellRenderer.cells = arr2d
 	
@@ -160,26 +158,23 @@ func stepSimulationForward(_frames: int):
 	rd.sync()
 
 	# Read back the data from the buffer
-	var output_bytes := rd.buffer_get_data(simulation_buffer)
-	simulationData = output_bytes.to_float32_array()
+	simulationData = rd.buffer_get_data(simulation_buffer).to_float32_array()
 
 	updateCellRenderer()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	updateCellRenderer()
-	makeDebugInfo()
 
+	updateDebugInfo()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 	match simulationState:
 		SimulationState.PAUSE_REQUESTED:
-			# TODO: Pause simulation here
 			simulationState = SimulationState.PAUSED
 
 		SimulationState.RUN_REQUESTED:
-			# TODO: Start simulation here
 			simulationState = SimulationState.RUNNING
 
 		SimulationState.PAUSED:
@@ -195,7 +190,7 @@ func _process(_delta):
 		_:
 			pass
 
-	makeDebugInfo()
+	updateDebugInfo()
 
 func _on_simulation_settings_window_close_requested():
 	$VBoxContainer/HeaderRow/ShowSimSettings.visible = true
@@ -236,13 +231,17 @@ func _input(event):
 		simulationState = SimulationState.STEP_REQUESTED
 
 	if event.is_action_pressed("reset_simulation"):
+		# Reset the data itself
 		simulationData = initialSimulationData
+
 		match simulationState:
+			# Manually update CellRenderer if in a state that wouldn't otherwise
 			SimulationState.PAUSED, \
 			SimulationState.PAUSE_REQUESTED, \
 			SimulationState.STEP_REQUESTED:
 				updateCellRenderer()
 
+			# For events that will already update we have nothing to do
 			_:
 				pass
 
