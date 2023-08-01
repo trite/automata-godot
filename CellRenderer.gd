@@ -9,7 +9,26 @@ var cell_sprites := []
 
 @export var deadCellModulation: Color = Color(0.25, 0.25, 0.25, 0.75)
 
-# Called when the node enters the scene tree for the first time.
+func setCellSprite(x: int, y: int, newValue: int) -> void:
+	while cell_sprites.size() <= y:
+		cell_sprites.append([])
+
+	while cell_sprites[y].size() <= x:
+		var cell_sprite = $Viewport/Cell.duplicate()
+
+		cell_sprite.position = Vector2(x * sprite_width, y * sprite_height)
+		cell_sprite.visible = true
+		cell_sprite.self_modulate = deadCellModulation
+		cell_sprite.get_node("Label").text = str(x) + "," + str(y)
+		$Viewport/Canvas.add_child(cell_sprite)
+
+		cell_sprites[y].append(cell_sprite)
+
+	if newValue == 1:
+		cell_sprites[y][x].self_modulate = Color.WHITE
+	else:
+		cell_sprites[y][x].self_modulate = deadCellModulation
+	
 func _ready():
 	# Make sure to hide the template cell
 	$Viewport/Cell.visible = false
@@ -30,10 +49,8 @@ func _ready():
 
 			cell_sprites[y].append(cell_sprite)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 	for y in range(0, cells.size()):
 		for x in range(0, cells[y].size()):
-			cell_sprites[x][y].self_modulate = \
-				Color.WHITE if cells[x][y] == 1 \
-				else deadCellModulation
+			setCellSprite(x, y, cells[y][x])
+
