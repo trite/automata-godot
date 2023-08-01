@@ -5,8 +5,11 @@ var weights := [ 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0 ]
 var kernel_row_length := 3
 
 # TODO: This should probably live somewhere else
-var simulation_grid_width := 20
-var simulation_grid_height := 20
+var simulation_grid_width := 100
+var simulation_grid_height := 100
+
+var simulation_x_size := 2
+var x_groups := 1
 
 enum SimulationState {
 	PAUSE_REQUESTED,
@@ -18,38 +21,26 @@ enum SimulationState {
 
 var simulationState := SimulationState.PAUSED
 
-const initialSimulationData := [
-		0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-]
+var initialSimulationData := []
 
-var simulationData := initialSimulationData
+var simulationData := []
 
 var shaderPath = "res://csa_compute_shader.glsl"
 
 var rd := RenderingServer.create_local_rendering_device()
 var shader := rd.shader_create_from_spirv(load(shaderPath).get_spirv())
-# var shaderFile := load("res://csa_compute_shader.glsl")
-# var shaderSpirv: RDShaderSPIRV = shaderFile.get_spirv()
-# var shader := rd.shader_create_from_spirv(shaderSpirv)
+
+func generateInitialSimulationData():
+	initialSimulationData = []
+
+	for i in range(0, simulation_grid_width * simulation_grid_height):
+		initialSimulationData.append(0)
+
+	initialSimulationData[1] = 1
+	initialSimulationData[simulation_grid_width + 2] = 1
+	initialSimulationData[2 * simulation_grid_width] = 1
+	initialSimulationData[2 * simulation_grid_width + 1] = 1
+	initialSimulationData[2 * simulation_grid_width + 2] = 1
 
 func simStateToString(simState):
 	match simState:
@@ -162,13 +153,16 @@ func stepSimulationForward(_frames: int):
 
 	updateCellRenderer()
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
+	generateInitialSimulationData()
+	simulationData = initialSimulationData
+
+	x_groups = simulation_x_size / simulation_grid_width + 1
+
 	updateCellRenderer()
 
 	updateDebugInfo()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
 	match simulationState:
 		SimulationState.PAUSE_REQUESTED:
