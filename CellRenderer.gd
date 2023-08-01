@@ -1,9 +1,5 @@
 extends SubViewportContainer
 
-@export var grid_width := 6
-
-@export var grid_height := 10
-
 @export var cells := []
 
 var cell_sprites := []
@@ -21,10 +17,10 @@ func _ready():
 	print(sprite_width)
 	print(sprite_height)
 
-	for y in range(0, grid_height):
+	for y in range(0, cells.size()):
 		cell_sprites.append([])
 
-		for x in range(0, grid_width):
+		for x in range(0, cells[y].size()):
 			var cell_sprite = $Viewport/Cell.duplicate()
 
 			cell_sprite.position = Vector2(x * sprite_width, y * sprite_height)
@@ -36,6 +32,8 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	for y in range(0, grid_height):
-		for x in range(0, grid_width):
-			cell_sprites[x][y].self_modulate = Color.WHITE if cells[x][y] == 1 else deadCellModulation
+	for y in range(0, cells.size()):
+		for x in range(0, cells[y].size()):
+			cell_sprites[x][y].self_modulate = \
+				Color.WHITE if cells[x][y] == 1 \
+				else deadCellModulation
