@@ -101,8 +101,10 @@ func updateCellRenderer():
 
 	# 	arr2d.append(row)
 
-	# print("Sim data:")
-	# print(simulationData)
+	# for debugging only, prints a ton
+	print("Sim data:")
+	print(simulationData)
+
 	$VBoxContainer/BodyRow/CellRenderer.cells = simulationData
 	
 func stepSimulationForward(_frames: int):
@@ -182,15 +184,18 @@ func create_chunks(data):
 	return chunks
 
 func unflatten_chunks(flattened_chunks, grid_width, grid_height):
-	var grid = Array()
-	for i in range(grid_width):
+	var grid = []
+	grid.resize(grid_width)
+	for y in range(grid_width):
 		var row = []
-		for j in range(grid_height):
-			row.append(0)
-		grid.append(row)
+		row.resize(grid_height)
+		for x in range(grid_height):
+			row[x] = 0
+
+		grid[y] = row
 	
-	var num_chunks_x = grid_width / CHUNK_SIZE
-	var num_chunks_y = grid_height / CHUNK_SIZE
+	var num_chunks_x = floor(grid_width / CHUNK_SIZE)
+	var num_chunks_y = floor(grid_height / CHUNK_SIZE)
 	var chunk_index = 0
 	
 	for chunk_x in range(num_chunks_x):
@@ -264,6 +269,7 @@ func stepSimulationForwardV2(_frames: int):
 
 	# Read back the data from the buffer
 	var flattened_chunks_result = rd.buffer_get_data(chunk_buffer).to_float32_array()
+	print(flattened_chunks_result.size())
 	simulationData = unflatten_chunks(flattened_chunks_result, simulation_grid_width, simulation_grid_height)
 
 	updateCellRenderer()
