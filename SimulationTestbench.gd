@@ -102,8 +102,8 @@ func updateCellRenderer():
 	# 	arr2d.append(row)
 
 	# for debugging only, prints a ton
-	print("Sim data:")
-	print(simulationData)
+	# print("Sim data:")
+	# print(simulationData)
 
 	$VBoxContainer/BodyRow/CellRenderer.cells = simulationData
 	
@@ -164,8 +164,8 @@ func stepSimulationForward(_frames: int):
 #   the padding is needed so each target cell can access its neighbors in that chunk
 #   target cells are the inner 5x5 grid, this is also the output for the chunk from the shader
 const CHUNK_SIZE = 5  # the core size of each chunk
-const PADDING = 1     # extra padding around each chunk
-const TOTAL_CHUNK_SIZE = CHUNK_SIZE + 2 * PADDING
+const CHUNK_PADDING = 1     # extra padding around each chunk
+const TOTAL_CHUNK_SIZE = CHUNK_SIZE + 2 * CHUNK_PADDING
 
 # creates an array that is (CHUNK_SIZE + PADDING)^2 in total length
 func create_chunks(data):
@@ -175,8 +175,8 @@ func create_chunks(data):
 	for x in range(0, grid_width, CHUNK_SIZE):
 		for y in range(0, grid_height, CHUNK_SIZE):
 			var chunk = PackedFloat32Array()
-			for i in range(x - PADDING, x + CHUNK_SIZE + PADDING):
-				for j in range(y - PADDING, y + CHUNK_SIZE + PADDING):
+			for i in range(x - CHUNK_PADDING, x + CHUNK_SIZE + CHUNK_PADDING):
+				for j in range(y - CHUNK_PADDING, y + CHUNK_SIZE + CHUNK_PADDING):
 					var wrapped_i = (i + grid_width) % grid_width  # wrap around the grid if needed
 					var wrapped_j = (j + grid_height) % grid_height
 					chunk.append(data[wrapped_i][wrapped_j])
@@ -185,17 +185,15 @@ func create_chunks(data):
 
 func unflatten_chunks(flattened_chunks, grid_width, grid_height):
 	var grid = []
-	grid.resize(grid_width)
-	for y in range(grid_width):
+	grid.resize(grid_height)
+	for y in range(grid_height):
 		var row = []
-		row.resize(grid_height)
-		for x in range(grid_height):
-			row[x] = 0
-
+		row.resize(grid_width)
+		row.fill(0)
 		grid[y] = row
 	
-	var num_chunks_x = floor(grid_width / CHUNK_SIZE)
-	var num_chunks_y = floor(grid_height / CHUNK_SIZE)
+	var num_chunks_x = ceil(grid_width / CHUNK_SIZE)
+	var num_chunks_y = ceil(grid_height / CHUNK_SIZE)
 	var chunk_index = 0
 	
 	for chunk_x in range(num_chunks_x):
@@ -204,21 +202,48 @@ func unflatten_chunks(flattened_chunks, grid_width, grid_height):
 				for local_y in range(CHUNK_SIZE):
 					var global_x = chunk_x * CHUNK_SIZE + local_x
 					var global_y = chunk_y * CHUNK_SIZE + local_y
-					var flattened_index = chunk_index * TOTAL_CHUNK_SIZE * TOTAL_CHUNK_SIZE + \
-						(local_y + PADDING) * TOTAL_CHUNK_SIZE + (local_x + PADDING)
-					grid[global_x][global_y] = flattened_chunks[flattened_index]
-		chunk_index += 1
+					
+					if global_x >= grid_width or global_y >= grid_height:
+						continue
+
+					var flattened_index = chunk_index * (TOTAL_CHUNK_SIZE * TOTAL_CHUNK_SIZE) + \
+						(local_y + CHUNK_PADDING) * TOTAL_CHUNK_SIZE + (local_x + CHUNK_PADDING)
+
+					# print("chunk_x:", chunk_x, " chunk_y:", chunk_y, " local_x:", local_x, " local_y:", local_y)
+					# print("global_x:", global_x, " global_y:", global_y, " flattened_index:", flattened_index)
+					
+					if flattened_index < len(flattened_chunks): # This check is optional but prevents out-of-range errors
+						grid[global_y][global_x] = flattened_chunks[flattened_index]
+			chunk_index += 1
+
+
+	print("grid to unflatten (truncated):")
+	flattened_chunks.resize(800)
+	print(flattened_chunks)
+	print("unflattened grid (truncated):")
+
+	for row in range(0, 8):
+		print(grid[row])
 					
 	return grid
 
 func stepSimulationForwardV2(_frames: int):
 	var chunks = create_chunks(simulationData)
 
+	print("preparing simulation run with input data (trunated):")
+	for row in range(0, 8):
+		print(simulationData[row])
+
 	# Flatten the 2D chunks into a 1D array
 	var flattened_chunks = []
 	for chunk in chunks:
 		for value in chunk:
 			flattened_chunks.append(value)
+
+	print("simulation data flattened to (truncated):")
+	var temp_flattened_chunks = flattened_chunks
+	temp_flattened_chunks.resize(800)
+	print(temp_flattened_chunks)
 					
 	# Data chunks uniform
 	var chunk_data = PackedFloat32Array(flattened_chunks)
@@ -226,7 +251,7 @@ func stepSimulationForwardV2(_frames: int):
 	var chunk_buffer = rd.storage_buffer_create(chunk_data_bytes.size(), chunk_data_bytes)
 	var chunk_uniform = RDUniform.new()
 	chunk_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	chunk_uniform.binding = 3 # Assign a new binding
+	chunk_uniform.binding = 0 # Assign a new binding
 	chunk_uniform.add_id(chunk_buffer)
 
 	# Kernel uniform
@@ -235,17 +260,22 @@ func stepSimulationForwardV2(_frames: int):
 	var kernel_buffer := rd.storage_buffer_create(kernel_bytes.size(), kernel_bytes)
 	var kernel_uniform := RDUniform.new()
 	kernel_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	kernel_uniform.binding = 0 # this needs to match the "binding" in our shader file
+	kernel_uniform.binding = 1 # this needs to match the "binding" in our shader file
 	kernel_uniform.add_id(kernel_buffer)
 
 	# Row lengths uniform
-	var row_length_info_bytes := PackedInt32Array([kernel_row_length]).to_byte_array()
+	# TODO: Is there a better way of making sure I don't forget these values when making this?
+	# layout(set = 0, binding = 2, std430) restrict buffer DetailsBuffer {
+	# 		int kernel_row_length;
+	# 		int chunk_row_length;
+	# 		int chunk_padding;
+	# } details_buffer;
+	var row_length_info_bytes := PackedInt32Array([kernel_row_length, CHUNK_SIZE, CHUNK_PADDING]).to_byte_array()
 	var row_length_info_buffer := rd.storage_buffer_create(row_length_info_bytes.size(), row_length_info_bytes)
 	var row_length_info_uniform := RDUniform.new()
 	row_length_info_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
-	row_length_info_uniform.binding = 1
+	row_length_info_uniform.binding = 2
 	row_length_info_uniform.add_id(row_length_info_buffer)
-
 
 	var uniform_set := rd.uniform_set_create([
 		kernel_uniform,
@@ -253,12 +283,18 @@ func stepSimulationForwardV2(_frames: int):
 		chunk_uniform
 	], shader, 0)
 
+	# Determine workgroups needed
+	@warning_ignore("integer_division")
+	var workgroups_x = ceil(float(simulation_grid_width) / float(CHUNK_SIZE))
+	@warning_ignore("integer_division")
+	var workgroups_y = ceil(float(simulation_grid_height) / float(CHUNK_SIZE))
+
 	# Create a compute pipeline
 	var pipeline := rd.compute_pipeline_create(shader)
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
-	rd.compute_list_dispatch(compute_list, 16, 1, 1)
+	rd.compute_list_dispatch(compute_list, workgroups_x, workgroups_y, 1)
 	rd.compute_list_end()
 
 	# Submit to GPU and wait for sync
@@ -269,7 +305,7 @@ func stepSimulationForwardV2(_frames: int):
 
 	# Read back the data from the buffer
 	var flattened_chunks_result = rd.buffer_get_data(chunk_buffer).to_float32_array()
-	print(flattened_chunks_result.size())
+	# print(flattened_chunks_result.size())
 	simulationData = unflatten_chunks(flattened_chunks_result, simulation_grid_width, simulation_grid_height)
 
 	updateCellRenderer()
